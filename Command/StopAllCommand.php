@@ -24,7 +24,7 @@ class StopAllCommand extends ContainerAwareCommand
         $alsoDisable = $input->getOption('also-disable');
         $includeRemote = $input->getOption('include-remote');
 
-        $registry = $this->getContainer()->get('exsyst.worker');
+        $registry = $this->getContainer()->get('exsyst_worker');
 
         foreach ($registry->getSharedWorkerNames() as $name) {
             $address = $registry->getSharedWorkerSocketAddress($name);
