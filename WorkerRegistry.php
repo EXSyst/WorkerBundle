@@ -3,9 +3,11 @@
 namespace EXSyst\Bundle\WorkerBundle;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpKernel\CacheClearer\CacheClearerInterface;
 use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
+use EXSyst\Component\Worker\SharedWorker;
 
-class WorkerRegistry implements CacheWarmerInterface
+class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
 {
     const IMPLEMENTATION_CLASS = 0;
     const IMPLEMENTATION_EXPRESSION = 1;
@@ -147,12 +149,27 @@ class WorkerRegistry implements CacheWarmerInterface
         return $this;
     }
 
+    public function clear($cacheDir)
+    {
+        foreach ($this->sharedWorkers as $sharedWorker) {
+            $factory = $this->getFactory($sharedWorker[0]);
+            if (SharedWorker::isLocalAddress($sharedWorker[1])) {
+                $factory->stopSharedWorker($sharedWorker[1]);
+            }
+        }
+    }
+
     public function warmUp($cacheDir)
     {
         foreach ($this->sharedWorkers as $sharedWorker) {
-            $this->getFactory($sharedWorker[0])->getBootstrapProfile()->compileScriptWithExpression($sharedWorker[2], $sharedWorker[1], $scriptPath, $mustDeleteOnError);
+            $factory = $this->getFactory($sharedWorker[0]);
+            $factory->getBootstrapProfile()->compileScriptWithExpression($sharedWorker[2], $sharedWorker[1], $scriptPath, $mustDeleteOnError);
             if ($mustDeleteOnError) {
                 unlink($scriptPath);
+                continue;
+            }
+            if (isset($sharedWorker[2]) && $sharedWorker[3]) {
+                $factory->startSharedWorkerWithExpression($sharedWorker[1], $sharedWorker[2]);
             }
         }
     }

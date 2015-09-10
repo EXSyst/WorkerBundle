@@ -26,6 +26,7 @@ class EXSystWorkerExtension extends Extension
         $config = $this->processConfiguration($configuration, $configs);
 
         $registryDefinition = new Definition(WorkerRegistry::class);
+        $registryDefinition->addTag('kernel.cache_clearer');
         $registryDefinition->addTag('kernel.cache_warmer', [ 'priority' => -10 ]);
         $container->setDefinition('exsyst_worker', $registryDefinition);
 
