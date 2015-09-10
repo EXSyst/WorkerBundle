@@ -62,7 +62,7 @@ class EXSystWorkerExtension extends Extension
 
         foreach ($config['shared_workers'] as $name => $sharedWorkerConfig) {
             $factoryName = isset($sharedWorkerConfig['factory']) ? $sharedWorkerConfig['factory'] : 'default';
-            $socketAddress = isset($sharedWorkerConfig['address']) ? $sharedWorkerConfig['address'] : ('unix://' . dirname($container->getParameter('kernel.root_dir')) . DIRECTORY_SEPARATOR . 'run' . DIRECTORY_SEPARATOR . 'exsyst_worker' . DIRECTORY_SEPARATOR . 'shared_worker.' . $name . '.sock');
+            $socketAddress = isset($sharedWorkerConfig['address']) ? $sharedWorkerConfig['address'] : ('unix://' . dirname($container->getParameter('kernel.root_dir')) . DIRECTORY_SEPARATOR . 'var' . DIRECTORY_SEPARATOR . 'exsyst_worker' . DIRECTORY_SEPARATOR . 'shared_worker.' . $name . '.sock');
             $expression = self::getSharedWorkerExpression($sharedWorkerConfig, $name, $bootstrapProfileConstructorArguments[$factoryName]);
             $eagerStart = isset($sharedWorkerConfig['eager_start']) ? !!$sharedWorkerConfig['eager_start'] : false;
 
@@ -78,11 +78,11 @@ class EXSystWorkerExtension extends Extension
 
     private function createBootstrapProfileDefinition(ContainerBuilder $container, $name)
     {
-        $killSwitchPath = dirname($container->getParameter('kernel.root_dir')) . DIRECTORY_SEPARATOR . 'run' . DIRECTORY_SEPARATOR . 'exsyst_worker' . DIRECTORY_SEPARATOR . 'kill_switch.' . $name . '.json';
+        $killSwitchPath = dirname($container->getParameter('kernel.root_dir')) . DIRECTORY_SEPARATOR . 'var' . DIRECTORY_SEPARATOR . 'exsyst_worker' . DIRECTORY_SEPARATOR . 'kill_switch.' . $name . '.json';
 
         $definition = new Definition(WorkerBootstrapProfile::class, [ false ]);
 
-        $definition->addMethodCall('addScriptToRequire', [ $container->getParameter('kernel.root_dir') . '/bootstrap.php.cache' ]);
+        $definition->addMethodCall('addScriptToRequire', [ dirname($container->getParameter('kernel.log_dir')) . '/bootstrap.php.cache' ]);
         $definition->addMethodCall('addScriptToRequire', [ $container->getParameter('kernel.root_dir') . '/AppKernel.php' ]);
         $definition->addMethodCall('addStage2GlobalVariableWithExpression', [ 'kernel',
             'new AppKernel(' . WorkerBootstrapProfile::exportPhpValue($container->getParameter('kernel.environment')) . ', ' . WorkerBootstrapProfile::exportPhpValue($container->getParameter('kernel.debug')) . ')' ]);
