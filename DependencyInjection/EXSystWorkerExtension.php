@@ -26,6 +26,7 @@ class EXSystWorkerExtension extends Extension
         $config = $this->processConfiguration($configuration, $configs);
 
         $registryDefinition = new Definition(WorkerRegistry::class);
+        $registryDefinition->addTag('kernel.cache_warmer', [ 'priority' => -10 ]);
         $container->setDefinition('exsyst_worker', $registryDefinition);
 
         $defaultBootstrapProfileDefinition = $this->createBootstrapProfileDefinition($container, 'default');
@@ -82,7 +83,7 @@ class EXSystWorkerExtension extends Extension
 
         $definition = new Definition(WorkerBootstrapProfile::class, [ false ]);
 
-        $definition->addMethodCall('addScriptToRequire', [ dirname($container->getParameter('kernel.log_dir')) . '/bootstrap.php.cache' ]);
+        $definition->addMethodCall('addScriptToRequire', [ dirname($container->getParameter('kernel.logs_dir')) . '/bootstrap.php.cache' ]);
         $definition->addMethodCall('addScriptToRequire', [ $container->getParameter('kernel.root_dir') . '/AppKernel.php' ]);
         $definition->addMethodCall('addStage2GlobalVariableWithExpression', [ 'kernel',
             'new AppKernel(' . WorkerBootstrapProfile::exportPhpValue($container->getParameter('kernel.environment')) . ', ' . WorkerBootstrapProfile::exportPhpValue($container->getParameter('kernel.debug')) . ')' ]);

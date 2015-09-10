@@ -3,8 +3,9 @@
 namespace EXSyst\Bundle\WorkerBundle;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
 
-class WorkerRegistry
+class WorkerRegistry implements CacheWarmerInterface
 {
     const IMPLEMENTATION_CLASS = 0;
     const IMPLEMENTATION_EXPRESSION = 1;
@@ -144,5 +145,20 @@ class WorkerRegistry
         $this->sharedWorkers[$workerName] = [$factoryName, $socketAddress, $implementationExpression, $eagerStart];
 
         return $this;
+    }
+
+    public function warmUp($cacheDir)
+    {
+        foreach ($this->sharedWorkers as $sharedWorker) {
+            $this->getFactory($sharedWorker[0])->getBootstrapProfile()->compileScriptWithExpression($sharedWorker[2], $sharedWorker[1], $scriptPath, $mustDeleteOnError);
+            if ($mustDeleteOnError) {
+                unlink($scriptPath);
+            }
+        }
+    }
+
+    public function isOptional()
+    {
+        return true;
     }
 }
