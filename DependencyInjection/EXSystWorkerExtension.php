@@ -72,7 +72,7 @@ class EXSystWorkerExtension extends Extension
             $container->setDefinition('exsyst_worker.shared_worker.' . $name, $sharedWorkerDefinition);
             $registryDefinition->addMethodCall('registerSharedWorker', [ $name, $factoryName, $socketAddress, $expression, $eagerStart ]);
             if ($expression !== null) {
-                $bootstrapProfileDefinitions[$factoryName]->addMethodCall('addPrecompiledScriptWithExpression', [ $expression, dirname($container->getParameter('kernel.cache_dir')) . DIRECTORY_SEPARATOR . 'exsyst_worker' . DIRECTORY_SEPARATOR . 'shared_worker.' . $name . '.php', $socketAddress ]);
+                $bootstrapProfileDefinitions[$factoryName]->addMethodCall('addPrecompiledScriptWithExpression', [ $expression, $container->getParameter('kernel.cache_dir') . DIRECTORY_SEPARATOR . 'exsyst_worker' . DIRECTORY_SEPARATOR . 'shared_worker.' . $name . '.php', $socketAddress ]);
             }
         }
     }
