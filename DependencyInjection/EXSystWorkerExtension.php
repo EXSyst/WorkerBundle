@@ -56,88 +56,14 @@ class EXSystWorkerExtension extends Extension
             }
 
             if (isset($factoryConfig['bootstrap_profile'])) {
-                $bootstrapProfileConfig = $factoryConfig['bootstrap_profile'];
-                if (isset($bootstrapProfileConfig['php']['path'])) {
-                    $bootstrapProfileDefinition->addMethodCall('setPhpExecutablePath', [ $bootstrapProfileConfig['php']['path'] ]);
-                }
-                if (isset($bootstrapProfileConfig['php']['arguments'])) {
-                    foreach ($bootstrapProfileConfig['php']['arguments'] as $arg) {
-                        $bootstrapProfileDefinition->addMethodCall('addPhpExecutableArgument', [ $arg ]);
-                    }
-                }
-                if (isset($bootstrapProfileConfig['stage1_parts'])) {
-                    foreach ($bootstrapProfileConfig['stage1_parts'] as $part) {
-                        $bootstrapProfileDefinition->addMethodCall('addStage1Part', [ $part ]);
-                    }
-                }
-                if (isset($bootstrapProfileConfig['scripts_to_require'])) {
-                    foreach ($bootstrapProfileConfig['scripts_to_require'] as $script) {
-                        $bootstrapProfileDefinition->addMethodCall('addScriptToRequire', [ $script ]);
-                    }
-                }
-                if (isset($bootstrapProfileConfig['stage2_parts'])) {
-                    foreach ($bootstrapProfileConfig['stage2_parts'] as $part) {
-                        $bootstrapProfileDefinition->addMethodCall('addStage2Part', [ $part ]);
-                    }
-                }
-                if (isset($bootstrapProfileConfig['argument_expressions'])) {
-                    foreach ($bootstrapProfileConfig['argument_expressions'] as $arg) {
-                        $bootstrapProfileDefinition->addMethodCall('addConstructorArgumentWithExpression', [ $arg ]);
-                        $bootstrapProfileConstructorArguments[$name][] = $arg;
-                    }
-                }
-                if (isset($bootstrapProfileConfig['stage3_parts'])) {
-                    foreach ($bootstrapProfileConfig['stage3_parts'] as $part) {
-                        $bootstrapProfileDefinition->addMethodCall('addStage3Part', [ $part ]);
-                    }
-                }
-                if (isset($bootstrapProfileConfig['channel_factory_service'])) {
-                    $bootstrapProfileDefinition->addMethodCall('setChannelFactory', [ new Reference($bootstrapProfileConfig['channel_factory_service']) ]);
-                }
-                if (isset($bootstrapProfileConfig['loop_expression'])) {
-                    if (isset($bootstrapProfileConfig['loop_service'])) {
-                        throw new Exception\AmbiguousDefinitionException('Error in worker factory "' . $name . '" : bootstrap profiles can\'t have a loop expression and a loop service at the same time.');
-                    }
-                    $bootstrapProfileDefinition->addMethodCall('setLoopExpression', [ $bootstrapProfileConfig['loop_expression'] ]);
-                } elseif (isset($bootstrapProfileConfig['loop_service'])) {
-                    $bootstrapProfileDefinition->addMethodCall('setLoopExpression', [ ServiceAwareWorkerFactory::generateServiceExpression($bootstrapProfileConfig['loop_service']) ]);
-                }
-                if (isset($bootstrapProfileConfig['socket_context_expression'])) {
-                    $bootstrapProfileDefinition->addMethodCall('setSocketContextExpression', [ $bootstrapProfileConfig['socket_context_expression'] ]);
-                }
-                if (isset($bootstrapProfileConfig['stop_cookie'])) {
-                    $bootstrapProfileDefinition->removeMethodCall('setStopCookie');
-                    $bootstrapProfileDefinition->addMethodCall('setStopCookie', [ $bootstrapProfileConfig['stop_cookie'] ]);
-                }
-                if (isset($bootstrapProfileConfig['kill_switch_path'])) {
-                    $bootstrapProfileDefinition->removeMethodCall('setKillSwitchPath');
-                    $bootstrapProfileDefinition->addMethodCall('setKillSwitchPath', [ $bootstrapProfileConfig['kill_switch_path'] ]);
-                }
+                self::processBootstrapProfileConfiguration($factoryConfig['bootstrap_profile'], $name, $bootstrapProfileDefinition, $bootstrapProfileConstructorArguments);
             }
         }
 
         foreach ($config['shared_workers'] as $name => $sharedWorkerConfig) {
             $factoryName = isset($sharedWorkerConfig['factory']) ? $sharedWorkerConfig['factory'] : 'default';
             $socketAddress = isset($sharedWorkerConfig['address']) ? $sharedWorkerConfig['address'] : ('unix://' . dirname($container->getParameter('kernel.root_dir')) . DIRECTORY_SEPARATOR . 'run' . DIRECTORY_SEPARATOR . 'exsyst_worker' . DIRECTORY_SEPARATOR . 'shared_worker.' . $name . '.sock');
-            if (isset($sharedWorkerConfig['expression'])) {
-                if (isset($sharedWorkerConfig['service']) && isset($sharedWorkerConfig['class'])) {
-                    throw new Exception\AmbiguousDefinitionException('Error in shared worker "' . $name . '" : shared workers can\'t have an instantiation expression, a service identifier, and a class name at the same time.');
-                } elseif (isset($sharedWorkerConfig['service'])) {
-                    throw new Exception\AmbiguousDefinitionException('Error in shared worker "' . $name . '" : shared workers can\'t have an instantiation expression and a service identifier at the same time.');
-                } elseif (isset($sharedWorkerConfig['class'])) {
-                    throw new Exception\AmbiguousDefinitionException('Error in shared worker "' . $name . '" : shared workers can\'t have an instantiation expression and a class name at the same time.');
-                }
-                $expression = $sharedWorkerConfig['expression'];
-            } elseif (isset($sharedWorkerConfig['service'])) {
-                if (isset($sharedWorkerConfig['class'])) {
-                    throw new Exception\AmbiguousDefinitionException('Error in shared worker "' . $name . '" : shared workers can\'t have a service identifier and a class name at the same time.');
-                }
-                $expression = ServiceAwareWorkerFactory::generateServiceExpression($sharedWorkerConfig['service']);
-            } elseif (isset($sharedWorkerConfig['class'])) {
-                $expression = 'new ' . $sharedWorkerConfig['class'] . '(' . implode(', ', $bootstrapProfileConstructorArguments[$factoryName]) . ')';
-            } else {
-                $expression = null;
-            }
+            $expression = self::getSharedWorkerExpression($sharedWorkerConfig, $name, $bootstrapProfileConstructorArguments[$factoryName]);
             $eagerStart = isset($sharedWorkerConfig['eager_start']) ? !!$sharedWorkerConfig['eager_start'] : false;
 
             $sharedWorkerDefinition = new Definition(SharedWorker::class, [ $socketAddress, $expression, true ]);
@@ -168,5 +94,78 @@ class EXSystWorkerExtension extends Extension
         $definition->setPublic(false);
 
         return $definition;
+    }
+
+    private static function processBootstrapProfileConfiguration(array $bootstrapProfileConfig, $name, Definition $bootstrapProfileDefinition, array &$bootstrapProfileConstructorArguments)
+    {
+        if (isset($bootstrapProfileConfig['php']['path'])) {
+            $bootstrapProfileDefinition->addMethodCall('setPhpExecutablePath', [ $bootstrapProfileConfig['php']['path'] ]);
+        }
+        if (isset($bootstrapProfileConfig['php']['arguments'])) {
+            foreach ($bootstrapProfileConfig['php']['arguments'] as $arg) {
+                $bootstrapProfileDefinition->addMethodCall('addPhpExecutableArgument', [ $arg ]);
+            }
+        }
+        self::processBootstrapProfileConfigurationArrayElement($bootstrapProfileConfig, 'stage1_parts', $bootstrapProfileDefinition, 'addStage1Part');
+        self::processBootstrapProfileConfigurationArrayElement($bootstrapProfileConfig, 'scripts_to_require', $bootstrapProfileDefinition, 'addScriptToRequire');
+        self::processBootstrapProfileConfigurationArrayElement($bootstrapProfileConfig, 'stage2_parts', $bootstrapProfileDefinition, 'addStage2Part');
+        if (isset($bootstrapProfileConfig['argument_expressions'])) {
+            foreach ($bootstrapProfileConfig['argument_expressions'] as $arg) {
+                $bootstrapProfileDefinition->addMethodCall('addConstructorArgumentWithExpression', [ $arg ]);
+                $bootstrapProfileConstructorArguments[$name][] = $arg;
+            }
+        }
+        self::processBootstrapProfileConfigurationArrayElement($bootstrapProfileConfig, 'stage3_parts', $bootstrapProfileDefinition, 'addStage3Part');
+        if (isset($bootstrapProfileConfig['channel_factory_service'])) {
+            $bootstrapProfileDefinition->addMethodCall('setChannelFactory', [ new Reference($bootstrapProfileConfig['channel_factory_service']) ]);
+        }
+        if (isset($bootstrapProfileConfig['loop_expression'])) {
+            if (isset($bootstrapProfileConfig['loop_service'])) {
+                throw new Exception\AmbiguousDefinitionException('Error in worker factory "' . $name . '" : bootstrap profiles can\'t have a loop expression and a loop service at the same time.');
+            }
+            $bootstrapProfileDefinition->addMethodCall('setLoopExpression', [ $bootstrapProfileConfig['loop_expression'] ]);
+        } elseif (isset($bootstrapProfileConfig['loop_service'])) {
+            $bootstrapProfileDefinition->addMethodCall('setLoopExpression', [ ServiceAwareWorkerFactory::generateServiceExpression($bootstrapProfileConfig['loop_service']) ]);
+        }
+        if (isset($bootstrapProfileConfig['socket_context_expression'])) {
+            $bootstrapProfileDefinition->addMethodCall('setSocketContextExpression', [ $bootstrapProfileConfig['socket_context_expression'] ]);
+        }
+        if (isset($bootstrapProfileConfig['stop_cookie'])) {
+            $bootstrapProfileDefinition->removeMethodCall('setStopCookie');
+            $bootstrapProfileDefinition->addMethodCall('setStopCookie', [ $bootstrapProfileConfig['stop_cookie'] ]);
+        }
+        if (isset($bootstrapProfileConfig['kill_switch_path'])) {
+            $bootstrapProfileDefinition->removeMethodCall('setKillSwitchPath');
+            $bootstrapProfileDefinition->addMethodCall('setKillSwitchPath', [ $bootstrapProfileConfig['kill_switch_path'] ]);
+        }
+    }
+    private static function processBootstrapProfileConfigurationArrayElement(array $bootstrapProfileConfig, $key, Definition $bootstrapProfileDefinition, $method)
+    {
+        if (isset($bootstrapProfileConfig[$key])) {
+            foreach ($bootstrapProfileConfig[$key] as $element) {
+                $bootstrapProfileDefinition->addMethodCall($method, [ $element ]);
+            }
+        }
+    }
+
+    private static function getSharedWorkerExpression(array $sharedWorkerConfig, $name, array $constructorArguments)
+    {
+        if (isset($sharedWorkerConfig['expression'])) {
+            if (isset($sharedWorkerConfig['service']) && isset($sharedWorkerConfig['class'])) {
+                throw new Exception\AmbiguousDefinitionException('Error in shared worker "' . $name . '" : shared workers can\'t have an instantiation expression, a service identifier, and a class name at the same time.');
+            } elseif (isset($sharedWorkerConfig['service'])) {
+                throw new Exception\AmbiguousDefinitionException('Error in shared worker "' . $name . '" : shared workers can\'t have an instantiation expression and a service identifier at the same time.');
+            } elseif (isset($sharedWorkerConfig['class'])) {
+                throw new Exception\AmbiguousDefinitionException('Error in shared worker "' . $name . '" : shared workers can\'t have an instantiation expression and a class name at the same time.');
+            }
+            return $sharedWorkerConfig['expression'];
+        } elseif (isset($sharedWorkerConfig['service'])) {
+            if (isset($sharedWorkerConfig['class'])) {
+                throw new Exception\AmbiguousDefinitionException('Error in shared worker "' . $name . '" : shared workers can\'t have a service identifier and a class name at the same time.');
+            }
+            return ServiceAwareWorkerFactory::generateServiceExpression($sharedWorkerConfig['service']);
+        } elseif (isset($sharedWorkerConfig['class'])) {
+            return 'new ' . $sharedWorkerConfig['class'] . '(' . implode(', ', $constructorArguments) . ')';
+        }
     }
 }
