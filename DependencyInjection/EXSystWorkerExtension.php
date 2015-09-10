@@ -44,8 +44,6 @@ class EXSystWorkerExtension extends Extension
         foreach ($config['factories'] as $name => $factoryConfig) {
             if ($name == 'default') {
                 $bootstrapProfileDefinition = $defaultBootstrapProfileDefinition;
-
-                $factoryDefinition = $defaultFactoryDefinition;
             } else {
                 $bootstrapProfileDefinition = $this->createBootstrapProfileDefinition($container, $name);
                 $container->setDefinition('exsyst_worker.bootstrap_profile.' . $name, $bootstrapProfileDefinition);
@@ -143,9 +141,8 @@ class EXSystWorkerExtension extends Extension
             $eagerStart = isset($sharedWorkerConfig['eager_start']) ? !!$sharedWorkerConfig['eager_start'] : false;
 
             $sharedWorkerDefinition = new Definition(SharedWorker::class, [ $socketAddress, $expression, true ]);
-            $sharedWorkerDefinition->setFactoryService('exsyst_worker.factory.' . $factoryName);
-            $sharedWorkerDefinition->setFactoryMethod('connectToSharedWorkerWithExpression');
-            $container->setDefinition('exsyst_worker.shared_worker.' . $name);
+            $sharedWorkerDefinition->setFactory([ new Reference('exsyst_worker.factory.' . $factoryName), 'connectToSharedWorkerWithExpression' ]);
+            $container->setDefinition('exsyst_worker.shared_worker.' . $name, $sharedWorkerDefinition);
             $registryDefinition->addMethodCall('registerSharedWorker', [ $name, $factoryName, $socketAddress, $expression, $eagerStart ]);
             if ($expression !== null) {
                 $bootstrapProfileDefinitions[$factoryName]->addMethodCall('addPrecompiledScriptWithExpression', [ $expression, dirname($container->getParameter('kernel.cache_dir')) . DIRECTORY_SEPARATOR . 'exsyst_worker' . DIRECTORY_SEPARATOR . 'shared_worker.' . $name . '.php', $socketAddress ]);
