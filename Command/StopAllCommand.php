@@ -47,7 +47,7 @@ class StopAllCommand extends ContainerAwareCommand
                 }
             }
 
-            if ($profile->getStopCookie() !== null) {
+            if ($profile->getAdminCookie() !== null) {
                 if ($registry->stopSharedWorker($name)) {
                     $output->writeln('Stopped '.($local ? 'local' : 'remote').' worker <comment>'.$name.'</comment>.');
                 } else {

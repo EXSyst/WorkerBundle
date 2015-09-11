@@ -34,7 +34,7 @@ class Configuration implements ConfigurationInterface
                                     ->scalarNode('loop_expression')->end()
                                     ->scalarNode('loop_service')->end()
                                     ->scalarNode('socket_context_expression')->end()
-                                    ->scalarNode('stop_cookie')->end()
+                                    ->scalarNode('admin_cookie')->end()
                                     ->scalarNode('kill_switch_path')->end()
                                 ->end()
                             ->end()

@@ -90,7 +90,7 @@ class EXSystWorkerExtension extends Extension
             'new AppKernel(' . WorkerBootstrapProfile::exportPhpValue($container->getParameter('kernel.environment')) . ', ' . WorkerBootstrapProfile::exportPhpValue($container->getParameter('kernel.debug')) . ')' ]);
         $definition->addMethodCall('addStage2Part', [ '$kernel->loadClassCache();' ]);
         $definition->addMethodCall('addStage3Part', [ 'if ($workerImpl instanceof ' . ContainerAwareInterface::class . ') {' . PHP_EOL . '    $workerImpl->setContainer($kernel->getContainer());' . PHP_EOL . '}' ]);
-        $definition->addMethodCall('setStopCookie', [ rtrim(strtr(base64_encode(hash_hmac('sha512', $killSwitchPath, $container->getParameter('kernel.secret'), true)), '+/', '-_'), '=') ]);
+        $definition->addMethodCall('setAdminCookie', [ rtrim(strtr(base64_encode(hash_hmac('sha512', $killSwitchPath, $container->getParameter('kernel.secret'), true)), '+/', '-_'), '=') ]);
         $definition->addMethodCall('setKillSwitchPath', [ $killSwitchPath ]);
 
         $definition->setPublic(false);
@@ -132,9 +132,9 @@ class EXSystWorkerExtension extends Extension
         if (isset($bootstrapProfileConfig['socket_context_expression'])) {
             $bootstrapProfileDefinition->addMethodCall('setSocketContextExpression', [ $bootstrapProfileConfig['socket_context_expression'] ]);
         }
-        if (isset($bootstrapProfileConfig['stop_cookie'])) {
-            $bootstrapProfileDefinition->removeMethodCall('setStopCookie');
-            $bootstrapProfileDefinition->addMethodCall('setStopCookie', [ $bootstrapProfileConfig['stop_cookie'] ]);
+        if (isset($bootstrapProfileConfig['admin_cookie'])) {
+            $bootstrapProfileDefinition->removeMethodCall('setAdminCookie');
+            $bootstrapProfileDefinition->addMethodCall('setAdminCookie', [ $bootstrapProfileConfig['admin_cookie'] ]);
         }
         if (isset($bootstrapProfileConfig['kill_switch_path'])) {
             $bootstrapProfileDefinition->removeMethodCall('setKillSwitchPath');
