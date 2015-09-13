@@ -99,12 +99,28 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
         return $this;
     }
 
+    public function getSharedWorkerProcessId($workerName)
+    {
+        $factory = $this->getSharedWorkerFactory($workerName);
+        $sharedWorker = $this->sharedWorkers[$workerName];
+
+        return $factory->getSharedWorkerProcessId($sharedWorker[1]);
+    }
+
     public function stopSharedWorker($workerName)
     {
         $factory = $this->getSharedWorkerFactory($workerName);
         $sharedWorker = $this->sharedWorkers[$workerName];
 
         return $factory->stopSharedWorker($sharedWorker[1]);
+    }
+
+    public function querySharedWorker($workerName)
+    {
+        $factory = $this->getSharedWorkerFactory($workerName);
+        $sharedWorker = $this->sharedWorkers[$workerName];
+
+        return $factory->querySharedWorker($sharedWorker[1]);
     }
 
     public function disableSharedWorker($workerName)
