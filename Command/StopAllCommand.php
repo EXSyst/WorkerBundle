@@ -55,7 +55,7 @@ class StopAllCommand extends ContainerAwareCommand
         foreach ($registry->getSharedWorkerNames() as $name) {
             $address = $registry->getSharedWorkerSocketAddress($name);
             $local = IdentificationHelper::isLocalAddress($address);
-            if (!$includeRemote && !$local) {
+            if (!$includeRemote & !$local) {
                 $output->writeln('Skipped remote worker <comment>'.$name.'</comment>.');
                 continue;
             }
@@ -69,7 +69,7 @@ class StopAllCommand extends ContainerAwareCommand
             $factory = $registry->getSharedWorkerFactory($name);
             $profile = $factory->getBootstrapProfile();
 
-            if ($alsoDisable && $local) {
+            if ($alsoDisable & $local) {
                 $this->disableWorker($output, $profile, $name, $wFactory);
             }
 
