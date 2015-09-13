@@ -34,7 +34,7 @@ class StopAllCommand extends ContainerAwareCommand
             ->addOption('signal', 'k', InputOption::VALUE_REQUIRED, 'Send the given POSIX signal to the workers instead of the stop message (-r will be ignored)');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    private function parseCommandLine(InputInterface $input, &$alsoDisable, &$includeRemote, &$factory, &$signal)
     {
         $alsoDisable = $input->getOption('also-disable');
         $includeRemote = $input->getOption('include-remote');
@@ -44,6 +44,11 @@ class StopAllCommand extends ContainerAwareCommand
             $includeRemote = false;
             $signal = self::parseSignal($signal);
         }
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
+        $this->parseCommandLine($input, $alsoDisable, $includeRemote, $factory, $signal);
 
         $registry = $this->getRegistry();
 

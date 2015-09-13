@@ -36,13 +36,18 @@ class ListCommand extends ContainerAwareCommand
             ->addOption('factory', 'f', InputOption::VALUE_REQUIRED, 'Only list workers managed by the given factory');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    private function parseCommandLine(InputInterface $input, &$long, &$colorNames, &$noStatus, &$remoteStatus, &$factory)
     {
         $long = $input->getOption('long');
         $colorNames = $long || $input->getOption('color-names');
         $noStatus = !$colorNames || $input->getOption('no-status');
         $remoteStatus = !$noStatus && $input->getOption('remote-status');
         $factory = $input->hasOption('factory') ? $input->getOption('factory') : null;
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
+        $this->parseCommandLine($input, $long, $colorNames, $noStatus, $remoteStatus, $factory);
 
         $registry = $this->getRegistry();
 
