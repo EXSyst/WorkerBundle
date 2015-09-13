@@ -7,7 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use EXSyst\Component\Worker\Bootstrap\WorkerBootstrapProfile;
-use EXSyst\Component\Worker\SharedWorker;
+use EXSyst\Component\Worker\Internal\IdentificationHelper;
 use EXSyst\Bundle\WorkerBundle\Exception;
 
 class StopAllCommand extends ContainerAwareCommand
@@ -49,7 +49,7 @@ class StopAllCommand extends ContainerAwareCommand
 
         foreach ($registry->getSharedWorkerNames() as $name) {
             $address = $registry->getSharedWorkerSocketAddress($name);
-            $local = SharedWorker::isLocalAddress($address);
+            $local = IdentificationHelper::isLocalAddress($address);
             if (!$includeRemote && !$local) {
                 $output->writeln('Skipped remote worker <comment>'.$name.'</comment>.');
                 continue;

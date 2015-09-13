@@ -5,7 +5,7 @@ namespace EXSyst\Bundle\WorkerBundle;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\CacheClearer\CacheClearerInterface;
 use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
-use EXSyst\Component\Worker\SharedWorker;
+use EXSyst\Component\Worker\Internal\IdentificationHelper;
 
 class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
 {
@@ -153,7 +153,7 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
     {
         foreach ($this->sharedWorkers as $sharedWorker) {
             $factory = $this->getFactory($sharedWorker[0]);
-            if (SharedWorker::isLocalAddress($sharedWorker[1])) {
+            if (IdentificationHelper::isLocalAddress($sharedWorker[1])) {
                 $factory->stopSharedWorker($sharedWorker[1]);
             }
         }
