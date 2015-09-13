@@ -100,14 +100,7 @@ class EXSystWorkerExtension extends Extension
 
     private static function processBootstrapProfileConfiguration(array $bootstrapProfileConfig, $name, Definition $bootstrapProfileDefinition, array &$bootstrapProfileConstructorArguments)
     {
-        if (isset($bootstrapProfileConfig['php']['path'])) {
-            $bootstrapProfileDefinition->addMethodCall('setPhpExecutablePath', [ $bootstrapProfileConfig['php']['path'] ]);
-        }
-        if (isset($bootstrapProfileConfig['php']['arguments'])) {
-            foreach ($bootstrapProfileConfig['php']['arguments'] as $arg) {
-                $bootstrapProfileDefinition->addMethodCall('addPhpExecutableArgument', [ $arg ]);
-            }
-        }
+        self::processBootstrapProfilePhpConfiguration($bootstrapProfileConfig, $bootstrapProfileDefinition);
         self::processBootstrapProfileConfigurationArrayElement($bootstrapProfileConfig, 'stage1_parts', $bootstrapProfileDefinition, 'addStage1Part');
         self::processBootstrapProfileConfigurationArrayElement($bootstrapProfileConfig, 'scripts_to_require', $bootstrapProfileDefinition, 'addScriptToRequire');
         self::processBootstrapProfileConfigurationArrayElement($bootstrapProfileConfig, 'stage2_parts', $bootstrapProfileDefinition, 'addStage2Part');
@@ -121,24 +114,22 @@ class EXSystWorkerExtension extends Extension
         if (isset($bootstrapProfileConfig['channel_factory_service'])) {
             $bootstrapProfileDefinition->addMethodCall('setChannelFactory', [ new Reference($bootstrapProfileConfig['channel_factory_service']) ]);
         }
-        if (isset($bootstrapProfileConfig['loop_expression'])) {
-            if (isset($bootstrapProfileConfig['loop_service'])) {
-                throw new Exception\AmbiguousDefinitionException('Error in worker factory "' . $name . '" : bootstrap profiles can\'t have a loop expression and a loop service at the same time.');
-            }
-            $bootstrapProfileDefinition->addMethodCall('setLoopExpression', [ $bootstrapProfileConfig['loop_expression'] ]);
-        } elseif (isset($bootstrapProfileConfig['loop_service'])) {
-            $bootstrapProfileDefinition->addMethodCall('setLoopExpression', [ ServiceAwareWorkerFactory::generateServiceExpression($bootstrapProfileConfig['loop_service']) ]);
-        }
+        self::processBootstrapProfileLoopConfiguration($bootstrapProfileConfig, $bootstrapProfileDefinition, $name);
         if (isset($bootstrapProfileConfig['socket_context_expression'])) {
             $bootstrapProfileDefinition->addMethodCall('setSocketContextExpression', [ $bootstrapProfileConfig['socket_context_expression'] ]);
         }
-        if (isset($bootstrapProfileConfig['admin_cookie'])) {
-            $bootstrapProfileDefinition->removeMethodCall('setAdminCookie');
-            $bootstrapProfileDefinition->addMethodCall('setAdminCookie', [ $bootstrapProfileConfig['admin_cookie'] ]);
+        self::processBootstrapProfileConfigurationScalarReplacementElement($bootstrapProfileConfig, 'admin_cookie', $bootstrapProfileDefinition, 'setAdminCookie');
+        self::processBootstrapProfileConfigurationScalarReplacementElement($bootstrapProfileConfig, 'kill_switch_path', $bootstrapProfileDefinition, 'setKillSwitchPath');
+    }
+    private static function processBootstrapProfilePhpConfiguration(array $bootstrapProfileConfig, Definition $bootstrapProfileDefinition)
+    {
+        if (isset($bootstrapProfileConfig['php']['path'])) {
+            $bootstrapProfileDefinition->addMethodCall('setPhpExecutablePath', [ $bootstrapProfileConfig['php']['path'] ]);
         }
-        if (isset($bootstrapProfileConfig['kill_switch_path'])) {
-            $bootstrapProfileDefinition->removeMethodCall('setKillSwitchPath');
-            $bootstrapProfileDefinition->addMethodCall('setKillSwitchPath', [ $bootstrapProfileConfig['kill_switch_path'] ]);
+        if (isset($bootstrapProfileConfig['php']['arguments'])) {
+            foreach ($bootstrapProfileConfig['php']['arguments'] as $arg) {
+                $bootstrapProfileDefinition->addMethodCall('addPhpExecutableArgument', [ $arg ]);
+            }
         }
     }
     private static function processBootstrapProfileConfigurationArrayElement(array $bootstrapProfileConfig, $key, Definition $bootstrapProfileDefinition, $method)
@@ -147,6 +138,24 @@ class EXSystWorkerExtension extends Extension
             foreach ($bootstrapProfileConfig[$key] as $element) {
                 $bootstrapProfileDefinition->addMethodCall($method, [ $element ]);
             }
+        }
+    }
+    private static function processBootstrapProfileLoopConfiguration(array $bootstrapProfileConfig, Definition $bootstrapProfileDefinition, $name)
+    {
+        if (isset($bootstrapProfileConfig['loop_expression'])) {
+            if (isset($bootstrapProfileConfig['loop_service'])) {
+                throw new Exception\AmbiguousDefinitionException('Error in worker factory "' . $name . '" : bootstrap profiles can\'t have a loop expression and a loop service at the same time.');
+            }
+            $bootstrapProfileDefinition->addMethodCall('setLoopExpression', [ $bootstrapProfileConfig['loop_expression'] ]);
+        } elseif (isset($bootstrapProfileConfig['loop_service'])) {
+            $bootstrapProfileDefinition->addMethodCall('setLoopExpression', [ ServiceAwareWorkerFactory::generateServiceExpression($bootstrapProfileConfig['loop_service']) ]);
+        }
+    }
+    private static function processBootstrapProfileConfigurationScalarReplacementElement(array $bootstrapProfileConfig, $key, Definition $bootstrapProfileDefinition, $method)
+    {
+        if (isset($bootstrapProfileConfig[$key])) {
+            $bootstrapProfileDefinition->removeMethodCall($method);
+            $bootstrapProfileDefinition->addMethodCall($method, [ $bootstrapProfileConfig[$key] ]);
         }
     }
 

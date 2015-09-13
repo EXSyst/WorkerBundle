@@ -24,7 +24,9 @@
         "react/event-loop": ">=0.1 <0.5"
     },
     "suggest": {
-        "react/event-loop": "Allows spawning evented (and shared) workers"
+        "react/event-loop": "Allows spawning evented (and shared) workers",
+        "ext-posix": "Allows sending signals to workers",
+        "ext-pcntl": "Allows using signal names (such has TERM, KILL, STOP, INT)"
     },
     "autoload": {
         "psr-4": {
