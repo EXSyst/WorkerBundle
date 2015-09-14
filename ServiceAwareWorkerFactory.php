@@ -2,8 +2,8 @@
 
 namespace EXSyst\Bundle\WorkerBundle;
 
-use EXSyst\Component\Worker\WorkerFactory;
 use EXSyst\Component\Worker\Bootstrap\WorkerBootstrapProfile;
+use EXSyst\Component\Worker\WorkerFactory;
 
 class ServiceAwareWorkerFactory extends WorkerFactory
 {
