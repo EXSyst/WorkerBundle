@@ -11,8 +11,8 @@
     "minimum-stability": "dev",
     "require": {
         "php": ">=5.5",
-        "exsyst/io": "dev-master",
-        "exsyst/worker": "dev-master",
+        "exsyst/io": ">=0.1 <0.2",
+        "exsyst/worker": ">=0.1 <0.2",
         "symfony/config": "~2.6|~3.0",
         "symfony/console": "~2.6|~3.0",
         "symfony/dependency-injection": "~2.6|~3.0",
@@ -31,6 +31,11 @@
     "autoload": {
         "psr-4": {
             "EXSyst\\Bundle\\WorkerBundle\\": ""
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.1.x-dev"
         }
     }
 }
