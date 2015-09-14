@@ -12,7 +12,7 @@ class ServiceAwareWorkerFactory extends WorkerFactory
         return $this->createWorkerWithExpression(self::generateServiceExpression($implementationService));
     }
 
-    public function createWorkerPoolWithService($implementationService, $workerCount)
+    public function createWorkerPoolWithService($implementationService, $workerCount = null)
     {
         return $this->createWorkerPoolWithExpression(self::generateServiceExpression($implementationService), $workerCount);
     }
