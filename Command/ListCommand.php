@@ -30,7 +30,7 @@ class ListCommand extends ContainerAwareCommand
             ->setName('exsyst-worker:list')
             ->setDescription('List this application\'s named shared workers')
             ->addOption('long', 'l', InputOption::VALUE_NONE, 'Long format : show details about each worker (implies -c)')
-            ->addOption('color-names', 'c', InputOption::VALUE_NONE, 'Color names depending on status (green = running, gray = disabled ; implied by -l)')
+            ->addOption('color-names', 'c', InputOption::VALUE_NONE, 'Color names depending on status (green = running, red = disabled ; implied by -l)')
             ->addOption('no-status', 'x', InputOption::VALUE_NONE, 'Do not try to connect to any worker to query status data, to save time (only meaningful with -l or -c ; -r will be ignored)')
             ->addOption('remote-status', 'r', InputOption::VALUE_NONE, 'Also try to connect to remote workers to query status data (may take a while ; only meaningful with -l or -c, ignored if -x is specified)')
             ->addOption('factory', 'f', InputOption::VALUE_REQUIRED, 'Only list workers managed by the given factory');
@@ -130,7 +130,7 @@ class ListCommand extends ContainerAwareCommand
 
     private function makeColoredName($name, array $flags)
     {
-        return ($flags[0] == 'l') ? ('<fg=green>'.$name.'</fg=green>') : (($flags[3] == 'd') ? ('<fg=gray>'.$name.'</fg=gray>') : $name);
+        return ($flags[0] == 'l') ? ('<fg=green>'.$name.'</fg=green>') : (($flags[3] == 'd') ? ('<fg=red>'.$name.'</fg=red>') : $name);
     }
 
     private function makeRow($name, $wFactory, $pid, $socketAddress, WorkerStatus $status = null)
@@ -141,9 +141,9 @@ class ListCommand extends ContainerAwareCommand
             implode($flags),
             $this->makeColoredName($name, $flags),
             $wFactory,
-            ($pid !== null) ? strval($pid) : '<fg=gray>unknown</fg=gray>',
-            IdentificationHelper::isNetworkExposedAddress($socketAddress) ? IdentificationHelper::stripScheme($socketAddress) : '<fg=gray>local-only</fg=gray>',
-            ($status !== null) ? $status->getTextStatus() : '<fg=gray>no data</fg=gray>',
+            ($pid !== null) ? strval($pid) : '<fg=blue>unknown</fg=blue>',
+            IdentificationHelper::isNetworkExposedAddress($socketAddress) ? IdentificationHelper::stripScheme($socketAddress) : '<fg=blue>local-only</fg=blue>',
+            ($status !== null) ? $status->getTextStatus() : '<fg=blue>no data</fg=blue>',
         ];
     }
 }
