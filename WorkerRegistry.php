@@ -14,6 +14,10 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
     const IMPLEMENTATION_SERVICE = 2;
 
     /**
+     * @var ContainerInterface
+     */
+    private $container;
+    /**
      * @var array
      */
     private $factories;
@@ -22,8 +26,9 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
      */
     private $sharedWorkers;
 
-    public function __construct()
+    public function __construct(ContainerInterface $container)
     {
+        $this->container = $container;
         $this->factories = [];
         $this->sharedWorkers = [];
     }
@@ -42,14 +47,13 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
         if (!isset($this->factories[$name])) {
             throw new Exception\NoSuchFactoryException('Unknown worker factory');
         }
-        $factoryCreationInfo = $this->factories[$name];
 
-        return $factoryCreationInfo[0]->get($factoryCreationInfo[1]);
+        return $this->container->get($this->factories[$name]);
     }
 
-    public function registerFactory($name, ContainerInterface $container, $factoryService)
+    public function registerFactory($name, $factoryService)
     {
-        $this->factories[$name] = [$container, $factoryService];
+        $this->factories[$name] = $factoryService;
 
         return $this;
     }
@@ -185,7 +189,12 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
                 continue;
             }
             if (isset($sharedWorker[2]) && $sharedWorker[3]) {
-                $factory->startSharedWorkerWithExpression($sharedWorker[1], $sharedWorker[2]);
+                register_shutdown_function(function () use ($factory, $scriptPath, $cacheDir) {
+                    // HACK to start the worker after Symfony will have moved the cache directory
+                    $factory->getBootstrapProfile()->getOrFindPhpExecutablePathAndArguments($php, $phpArgs);
+                    $line = array_merge([$php], $phpArgs, [str_replace($cacheDir, dirname($cacheDir).DIRECTORY_SEPARATOR.$this->container->getParameter('kernel.environment'), $scriptPath)]);
+                    system(implode(' ', array_map('escapeshellarg', $line)).' </dev/null >/dev/null 2>&1 &');
+                });
             }
         }
     }

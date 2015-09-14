@@ -25,7 +25,7 @@ class EXSystWorkerExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        $registryDefinition = new Definition(WorkerRegistry::class);
+        $registryDefinition = new Definition(WorkerRegistry::class, [ new Reference('service_container') ]);
         $registryDefinition->addTag('kernel.cache_clearer');
         $registryDefinition->addTag('kernel.cache_warmer', [ 'priority' => -10 ]);
         $container->setDefinition('exsyst_worker', $registryDefinition);
@@ -41,7 +41,7 @@ class EXSystWorkerExtension extends Extension
 
         $defaultFactoryDefinition = new Definition(ServiceAwareWorkerFactory::class, [ new Reference('exsyst_worker.bootstrap_profile.default') ]);
         $container->setDefinition('exsyst_worker.factory.default', $defaultFactoryDefinition);
-        $registryDefinition->addMethodCall('registerFactory', [ 'default', new Reference('service_container'), 'exsyst_worker.factory.default' ]);
+        $registryDefinition->addMethodCall('registerFactory', [ 'default', 'exsyst_worker.factory.default' ]);
 
         foreach ($config['factories'] as $name => $factoryConfig) {
             if ($name == 'default') {
@@ -54,7 +54,7 @@ class EXSystWorkerExtension extends Extension
 
                 $defaultFactoryDefinition = new Definition(ServiceAwareWorkerFactory::class, [ new Reference('exsyst_worker.bootstrap_profile.' . $name) ]);
                 $container->setDefinition('exsyst_worker.factory.' . $name, $defaultFactoryDefinition);
-                $registryDefinition->addMethodCall('registerFactory', [ $name, new Reference('service_container'), 'exsyst_worker.factory.' . $name ]);
+                $registryDefinition->addMethodCall('registerFactory', [ $name, 'exsyst_worker.factory.' . $name ]);
             }
 
             if (isset($factoryConfig['bootstrap_profile'])) {
