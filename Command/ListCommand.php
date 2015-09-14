@@ -133,9 +133,10 @@ class ListCommand extends ContainerAwareCommand
         return ($flags[0] == 'l') ? ('<fg=green>'.$name.'</fg=green>') : (($flags[3] == 'd') ? ('<fg=gray>'.$name.'</fg=gray>') : $name);
     }
 
-    private function makeRow($flags, $name, $wFactory, $pid, $socketAddress, WorkerStatus $status = null)
+    private function makeRow($name, $wFactory, $pid, $socketAddress, WorkerStatus $status = null)
     {
         $flags = $this->getFlags($name, $pid, IdentificationHelper::isLocalAddress($socketAddress), $status);
+
         return [
             implode($flags),
             $this->makeColoredName($name, $flags),
