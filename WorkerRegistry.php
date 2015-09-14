@@ -2,10 +2,10 @@
 
 namespace EXSyst\Bundle\WorkerBundle;
 
+use EXSyst\Component\Worker\Internal\IdentificationHelper;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\CacheClearer\CacheClearerInterface;
 use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
-use EXSyst\Component\Worker\Internal\IdentificationHelper;
 
 class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
 {

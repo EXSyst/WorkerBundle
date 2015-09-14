@@ -2,14 +2,14 @@
 
 namespace EXSyst\Bundle\WorkerBundle\Command;
 
+use EXSyst\Component\Worker\Exception\ConnectException;
+use EXSyst\Component\Worker\Internal\IdentificationHelper;
+use EXSyst\Component\Worker\Status\WorkerStatus;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use EXSyst\Component\Worker\Exception\ConnectException;
-use EXSyst\Component\Worker\Internal\IdentificationHelper;
-use EXSyst\Component\Worker\Status\WorkerStatus;
 
 class ListCommand extends ContainerAwareCommand
 {

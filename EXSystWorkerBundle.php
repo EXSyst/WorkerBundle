@@ -2,8 +2,8 @@
 
 namespace EXSyst\Bundle\WorkerBundle;
 
-use Symfony\Component\HttpKernel\Bundle\Bundle;
 use EXSyst\Bundle\WorkerBundle\DependencyInjection\EXSystWorkerExtension;
+use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class EXSystWorkerBundle extends Bundle
 {
