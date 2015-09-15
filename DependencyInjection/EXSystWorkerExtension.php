@@ -115,6 +115,7 @@ class EXSystWorkerExtension extends Extension
     private static function processBootstrapProfileConfiguration(array $bootstrapProfileConfig, $name, Definition $bootstrapProfileDefinition, array &$bootstrapProfileConstructorArguments)
     {
         self::processBootstrapProfilePhpConfiguration($bootstrapProfileConfig, $bootstrapProfileDefinition);
+        self::processBootstrapProfileConfigurationScalarElement($bootstrapProfileConfig, 'preferred_identity', $bootstrapProfileDefinition, 'setPreferredIdentity');
         self::processBootstrapProfileConfigurationArrayElement($bootstrapProfileConfig, 'stage1_parts', $bootstrapProfileDefinition, 'addStage1Part');
         self::processBootstrapProfileConfigurationArrayElement($bootstrapProfileConfig, 'scripts_to_require', $bootstrapProfileDefinition, 'addScriptToRequire');
         self::processBootstrapProfileConfigurationArrayElement($bootstrapProfileConfig, 'stage2_parts', $bootstrapProfileDefinition, 'addStage2Part');
@@ -129,9 +130,7 @@ class EXSystWorkerExtension extends Extension
             $bootstrapProfileDefinition->addMethodCall('setChannelFactory', [new Reference($bootstrapProfileConfig['channel_factory_service'])]);
         }
         self::processBootstrapProfileLoopConfiguration($bootstrapProfileConfig, $bootstrapProfileDefinition, $name);
-        if (isset($bootstrapProfileConfig['socket_context_expression'])) {
-            $bootstrapProfileDefinition->addMethodCall('setSocketContextExpression', [$bootstrapProfileConfig['socket_context_expression']]);
-        }
+        self::processBootstrapProfileConfigurationScalarElement($bootstrapProfileConfig, 'socket_context_expression', $bootstrapProfileDefinition, 'setSocketContextExpression');
         self::processBootstrapProfileConfigurationScalarReplacementElement($bootstrapProfileConfig, 'admin_cookie', $bootstrapProfileDefinition, 'setAdminCookie');
         self::processBootstrapProfileConfigurationScalarReplacementElement($bootstrapProfileConfig, 'kill_switch_path', $bootstrapProfileDefinition, 'setKillSwitchPath');
     }
@@ -181,6 +180,19 @@ class EXSystWorkerExtension extends Extension
             $bootstrapProfileDefinition->addMethodCall('setLoopExpression', [$bootstrapProfileConfig['loop_expression']]);
         } elseif (isset($bootstrapProfileConfig['loop_service'])) {
             $bootstrapProfileDefinition->addMethodCall('setLoopExpression', [ServiceAwareWorkerFactory::generateServiceExpression($bootstrapProfileConfig['loop_service'])]);
+        }
+    }
+
+    /**
+     * @param array      $bootstrapProfileConfig
+     * @param string     $key
+     * @param Definition $bootstrapProfileDefinition
+     * @param string     $method
+     */
+    private static function processBootstrapProfileConfigurationScalarElement(array $bootstrapProfileConfig, $key, Definition $bootstrapProfileDefinition, $method)
+    {
+        if (isset($bootstrapProfileConfig[$key])) {
+            $bootstrapProfileDefinition->addMethodCall($method, [$bootstrapProfileConfig[$key]]);
         }
     }
 

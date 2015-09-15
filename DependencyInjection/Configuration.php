@@ -27,6 +27,7 @@ class Configuration implements ConfigurationInterface
                                             ->arrayNode('arguments')->end()
                                         ->end()
                                     ->end()
+                                    ->scalarNode('preferred_identity')->end()
                                     ->arrayNode('stage1_parts')->end()
                                     ->arrayNode('scripts_to_require')->end()
                                     ->arrayNode('stage2_parts')->end()
