@@ -2,7 +2,11 @@
 
 namespace EXSyst\Bundle\WorkerBundle;
 
+use EXSyst\Component\Worker\Exception\RuntimeException;
 use EXSyst\Component\Worker\Internal\IdentificationHelper;
+use EXSyst\Component\Worker\SharedWorker;
+use EXSyst\Component\Worker\Status\WorkerStatus;
+use EXSyst\Component\Worker\WorkerFactory;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\CacheClearer\CacheClearerInterface;
 use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
@@ -22,6 +26,9 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
      */
     private $sharedWorkers;
 
+    /**
+     * @param ContainerInterface $container
+     */
     public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
@@ -29,11 +36,21 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
         $this->sharedWorkers = [];
     }
 
+    /**
+     * @return array
+     */
     public function getFactoryNames()
     {
         return $this->factories;
     }
 
+    /**
+     * @param string|null $name
+     *
+     * @throws Exception\NoSuchFactoryException
+     *
+     * @return WorkerFactory
+     */
     public function getFactory($name = null)
     {
         if ($name === null) {
@@ -47,6 +64,12 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
         return $this->container->get($this->factories[$name]);
     }
 
+    /**
+     * @param string $name
+     * @param string $factoryService
+     *
+     * @return $this
+     */
     public function registerFactory($name, $factoryService)
     {
         $this->factories[$name] = $factoryService;
@@ -54,11 +77,21 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
         return $this;
     }
 
+    /**
+     * @return array
+     */
     public function getSharedWorkerNames()
     {
         return array_keys($this->sharedWorkers);
     }
 
+    /**
+     * @param string $workerName
+     *
+     * @throws Exception\NoSuchSharedWorkerException
+     *
+     * @return string
+     */
     public function getSharedWorkerFactoryName($workerName)
     {
         if (!isset($this->sharedWorkers[$workerName])) {
@@ -68,11 +101,26 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
         return $this->sharedWorkers[$workerName][0];
     }
 
+    /**
+     * @param string $workerName
+     *
+     * @throws Exception\NoSuchFactoryException
+     * @throws Exception\NoSuchSharedWorkerException
+     *
+     * @return WorkerFactory
+     */
     public function getSharedWorkerFactory($workerName)
     {
         return $this->getFactory($this->getSharedWorkerFactoryName($workerName));
     }
 
+    /**
+     * @param string $workerName
+     *
+     * @throws Exception\NoSuchSharedWorkerException
+     *
+     * @return string
+     */
     public function getSharedWorkerSocketAddress($workerName)
     {
         if (!isset($this->sharedWorkers[$workerName])) {
@@ -82,6 +130,14 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
         return $this->sharedWorkers[$workerName][1];
     }
 
+    /**
+     * @param string $workerName
+     *
+     * @throws Exception\NoSuchFactoryException
+     * @throws Exception\NoSuchSharedWorkerException
+     *
+     * @return SharedWorker
+     */
     public function connectToSharedWorker($workerName, $autoStart = true)
     {
         $factory = $this->getSharedWorkerFactory($workerName);
@@ -90,6 +146,14 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
         return $factory->connectToSharedWorkerWithExpression($sharedWorker[1], $sharedWorker[2], $autoStart);
     }
 
+    /**
+     * @param string $workerName
+     *
+     * @throws Exception\NoSuchFactoryException
+     * @throws Exception\NoSuchSharedWorkerException
+     *
+     * @return $this
+     */
     public function startSharedWorker($workerName)
     {
         $factory = $this->getSharedWorkerFactory($workerName);
@@ -99,6 +163,15 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
         return $this;
     }
 
+    /**
+     * @param string $workerName
+     *
+     * @throws Exception\NoSuchFactoryException
+     * @throws Exception\NoSuchSharedWorkerException
+     * @throws RuntimeException
+     *
+     * @return int|null
+     */
     public function getSharedWorkerProcessId($workerName)
     {
         $factory = $this->getSharedWorkerFactory($workerName);
@@ -107,6 +180,14 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
         return $factory->getSharedWorkerProcessId($sharedWorker[1]);
     }
 
+    /**
+     * @param string $workerName
+     *
+     * @throws Exception\NoSuchFactoryException
+     * @throws Exception\NoSuchSharedWorkerException
+     *
+     * @return bool
+     */
     public function stopSharedWorker($workerName)
     {
         $factory = $this->getSharedWorkerFactory($workerName);
@@ -115,6 +196,14 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
         return $factory->stopSharedWorker($sharedWorker[1]);
     }
 
+    /**
+     * @param string $workerName
+     *
+     * @throws Exception\NoSuchFactoryException
+     * @throws Exception\NoSuchSharedWorkerException
+     *
+     * @return WorkerStatus
+     */
     public function querySharedWorker($workerName)
     {
         $factory = $this->getSharedWorkerFactory($workerName);
@@ -123,6 +212,14 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
         return $factory->querySharedWorker($sharedWorker[1]);
     }
 
+    /**
+     * @param string $workerName
+     *
+     * @throws Exception\NoSuchFactoryException
+     * @throws Exception\NoSuchSharedWorkerException
+     *
+     * @return $this
+     */
     public function disableSharedWorker($workerName)
     {
         $factory = $this->getSharedWorkerFactory($workerName);
@@ -132,6 +229,14 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
         return $this;
     }
 
+    /**
+     * @param string $workerName
+     *
+     * @throws Exception\NoSuchFactoryException
+     * @throws Exception\NoSuchSharedWorkerException
+     *
+     * @return $this
+     */
     public function reEnableSharedWorker($workerName)
     {
         $factory = $this->getSharedWorkerFactory($workerName);
@@ -141,6 +246,14 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
         return $this;
     }
 
+    /**
+     * @param string $workerName
+     *
+     * @throws Exception\NoSuchFactoryException
+     * @throws Exception\NoSuchSharedWorkerException
+     *
+     * @return bool
+     */
     public function isSharedWorkerDisabled($workerName)
     {
         $factory = $this->getSharedWorkerFactory($workerName);
@@ -149,6 +262,13 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
         return $factory->isSharedWorkerDisabled($sharedWorker[1]);
     }
 
+    /**
+     * @param string $workerName
+     *
+     * @throws Exception\NoSuchSharedWorkerException
+     *
+     * @return bool
+     */
     public function isSharedWorkerEagerlyStarting($workerName)
     {
         if (!isset($this->sharedWorkers[$workerName])) {
@@ -158,6 +278,13 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
         return $this->sharedWorkers[$workerName][3];
     }
 
+    /**
+     * @param string      $workerName
+     * @param string      $factoryName
+     * @param string      $socketAddress
+     * @param string|null $implementationExpression
+     * @param bool        $eagerStart
+     */
     public function registerSharedWorker($workerName, $factoryName, $socketAddress, $implementationExpression, $eagerStart)
     {
         $this->sharedWorkers[$workerName] = [$factoryName, $socketAddress, $implementationExpression, $eagerStart];
@@ -165,6 +292,7 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
         return $this;
     }
 
+    /** {@inheritdoc} */
     public function clear($cacheDir)
     {
         foreach ($this->sharedWorkers as $sharedWorker) {
@@ -175,6 +303,7 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
         }
     }
 
+    /** {@inheritdoc} */
     public function warmUp($cacheDir)
     {
         foreach ($this->sharedWorkers as $sharedWorker) {
@@ -195,6 +324,7 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
         }
     }
 
+    /** {@inheritdoc} */
     public function isOptional()
     {
         return true;

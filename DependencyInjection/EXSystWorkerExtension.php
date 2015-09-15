@@ -15,11 +15,13 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 class EXSystWorkerExtension extends Extension
 {
+    /** {@inheritdoc} */
     public function getAlias()
     {
         return 'exsyst_worker';
     }
 
+    /** {@inheritdoc} */
     public function load(array $configs, ContainerBuilder $container)
     {
         $configuration = new Configuration();
@@ -78,6 +80,12 @@ class EXSystWorkerExtension extends Extension
         }
     }
 
+    /**
+     * @param ContainerBuilder $container
+     * @param string $name
+     *
+     * @return Definition
+     */
     private function createBootstrapProfileDefinition(ContainerBuilder $container, $name)
     {
         $killSwitchPath = dirname($container->getParameter('kernel.root_dir')).DIRECTORY_SEPARATOR.'var'.DIRECTORY_SEPARATOR.'exsyst_worker'.DIRECTORY_SEPARATOR.'kill_switch.'.$name.'.json';
@@ -98,6 +106,12 @@ class EXSystWorkerExtension extends Extension
         return $definition;
     }
 
+    /**
+     * @param array $bootstrapProfileConfig
+     * @param string $name
+     * @param Definition $bootstrapProfileDefinition
+     * @param array $bootstrapProfileConstructorArguments
+     */
     private static function processBootstrapProfileConfiguration(array $bootstrapProfileConfig, $name, Definition $bootstrapProfileDefinition, array &$bootstrapProfileConstructorArguments)
     {
         self::processBootstrapProfilePhpConfiguration($bootstrapProfileConfig, $bootstrapProfileDefinition);
@@ -122,6 +136,10 @@ class EXSystWorkerExtension extends Extension
         self::processBootstrapProfileConfigurationScalarReplacementElement($bootstrapProfileConfig, 'kill_switch_path', $bootstrapProfileDefinition, 'setKillSwitchPath');
     }
 
+    /**
+     * @param array $bootstrapProfileConfig
+     * @param Definition $bootstrapProfileDefinition
+     */
     private static function processBootstrapProfilePhpConfiguration(array $bootstrapProfileConfig, Definition $bootstrapProfileDefinition)
     {
         if (isset($bootstrapProfileConfig['php']['path'])) {
@@ -134,6 +152,12 @@ class EXSystWorkerExtension extends Extension
         }
     }
 
+    /**
+     * @param array $bootstrapProfileConfig
+     * @param string $key
+     * @param Definition $bootstrapProfileDefinition
+     * @param string $method
+     */
     private static function processBootstrapProfileConfigurationArrayElement(array $bootstrapProfileConfig, $key, Definition $bootstrapProfileDefinition, $method)
     {
         if (isset($bootstrapProfileConfig[$key])) {
@@ -143,6 +167,11 @@ class EXSystWorkerExtension extends Extension
         }
     }
 
+    /**
+     * @param array $bootstrapProfileConfig
+     * @param Definition $bootstrapProfileDefinition
+     * @param string $name
+     */
     private static function processBootstrapProfileLoopConfiguration(array $bootstrapProfileConfig, Definition $bootstrapProfileDefinition, $name)
     {
         if (isset($bootstrapProfileConfig['loop_expression'])) {
@@ -155,6 +184,12 @@ class EXSystWorkerExtension extends Extension
         }
     }
 
+    /**
+     * @param array $bootstrapProfileConfig
+     * @param string $key
+     * @param Definition $bootstrapProfileDefinition
+     * @param string $method
+     */
     private static function processBootstrapProfileConfigurationScalarReplacementElement(array $bootstrapProfileConfig, $key, Definition $bootstrapProfileDefinition, $method)
     {
         if (isset($bootstrapProfileConfig[$key])) {
@@ -163,6 +198,13 @@ class EXSystWorkerExtension extends Extension
         }
     }
 
+    /**
+     * @param array $sharedWorkerConfig
+     * @param string $name
+     * @param array $constructorArguments
+     *
+     * @return string
+     */
     private static function getSharedWorkerExpression(array $sharedWorkerConfig, $name, array $constructorArguments)
     {
         if (isset($sharedWorkerConfig['expression'])) {

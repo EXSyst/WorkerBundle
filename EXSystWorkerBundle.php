@@ -7,6 +7,7 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class EXSystWorkerBundle extends Bundle
 {
+    /** {@inheritdoc} */
     public function getContainerExtension()
     {
         if (null === $this->extension) {

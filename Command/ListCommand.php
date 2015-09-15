@@ -2,6 +2,7 @@
 
 namespace EXSyst\Bundle\WorkerBundle\Command;
 
+use EXSyst\Bundle\WorkerBundle\WorkerRegistry;
 use EXSyst\Component\Worker\Exception\ConnectException;
 use EXSyst\Component\Worker\Internal\IdentificationHelper;
 use EXSyst\Component\Worker\Status\WorkerStatus;
@@ -13,8 +14,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ListCommand extends ContainerAwareCommand
 {
+    /**
+     * @var WorkerRegistry|null
+     */
     private $registry;
 
+    /**
+     * @return WorkerRegistry
+     */
     private function getRegistry()
     {
         if (!isset($this->registry)) {
@@ -24,6 +31,7 @@ class ListCommand extends ContainerAwareCommand
         return $this->registry;
     }
 
+    /** {@inheritdoc} */
     protected function configure()
     {
         $this
@@ -36,6 +44,14 @@ class ListCommand extends ContainerAwareCommand
             ->addOption('factory', 'f', InputOption::VALUE_REQUIRED, 'Only list workers managed by the given factory');
     }
 
+    /**
+     * @param InputInterface $input
+     * @param bool           $long
+     * @param bool           $colorNames
+     * @param bool           $noStatus
+     * @param bool           $remoteStatus
+     * @param string|null    $factory
+     */
     private function parseCommandLine(InputInterface $input, &$long, &$colorNames, &$noStatus, &$remoteStatus, &$factory)
     {
         $long = $input->getOption('long');
@@ -45,6 +61,7 @@ class ListCommand extends ContainerAwareCommand
         $factory = $input->hasOption('factory') ? $input->getOption('factory') : null;
     }
 
+    /** {@inheritdoc} */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->parseCommandLine($input, $long, $colorNames, $noStatus, $remoteStatus, $factory);
@@ -86,6 +103,14 @@ class ListCommand extends ContainerAwareCommand
         }
     }
 
+    /**
+     * @param string            $name
+     * @param bool              $noStatus
+     * @param bool              $remoteStatus
+     * @param string            $socketAddress
+     * @param int|null          $pid
+     * @param WorkerStatus|null $status
+     */
     private function getData($name, $noStatus, $remoteStatus, &$socketAddress, &$pid, &$status)
     {
         $registry = $this->getRegistry();
@@ -102,6 +127,14 @@ class ListCommand extends ContainerAwareCommand
         }
     }
 
+    /**
+     * @param string            $name
+     * @param int|null          $pid
+     * @param bool              $local
+     * @param WorkerStatus|null $status
+     *
+     * @return array
+     */
     private function getFlags($name, $pid, $local, WorkerStatus $status = null)
     {
         $registry = $this->getRegistry();
@@ -128,11 +161,26 @@ class ListCommand extends ContainerAwareCommand
         return $flags;
     }
 
+    /**
+     * @param string $name
+     * @param array  $flags
+     *
+     * @return string
+     */
     private function makeColoredName($name, array $flags)
     {
         return ($flags[0] == 'l') ? ('<fg=green>'.$name.'</fg=green>') : (($flags[3] == 'd') ? ('<fg=red>'.$name.'</fg=red>') : $name);
     }
 
+    /**
+     * @param string            $name
+     * @param string            $wFactory
+     * @param int|null          $pid
+     * @param string            $socketAddress
+     * @param WorkerStatus|null $status
+     *
+     * @return array
+     */
     private function makeRow($name, $wFactory, $pid, $socketAddress, WorkerStatus $status = null)
     {
         $flags = $this->getFlags($name, $pid, IdentificationHelper::isLocalAddress($socketAddress), $status);

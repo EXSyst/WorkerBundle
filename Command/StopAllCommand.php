@@ -2,6 +2,7 @@
 
 namespace EXSyst\Bundle\WorkerBundle\Command;
 
+use EXSyst\Bundle\WorkerBundle\WorkerRegistry;
 use EXSyst\Bundle\WorkerBundle\Exception;
 use EXSyst\Component\Worker\Bootstrap\WorkerBootstrapProfile;
 use EXSyst\Component\Worker\Internal\IdentificationHelper;
@@ -12,8 +13,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class StopAllCommand extends ContainerAwareCommand
 {
+    /**
+     * @var WorkerRegistry|null
+     */
     private $registry;
 
+    /**
+     * @return WorkerRegistry
+     */
     private function getRegistry()
     {
         if (!isset($this->registry)) {
@@ -23,6 +30,7 @@ class StopAllCommand extends ContainerAwareCommand
         return $this->registry;
     }
 
+    /** {@inheritdoc} */
     protected function configure()
     {
         $this
@@ -34,6 +42,15 @@ class StopAllCommand extends ContainerAwareCommand
             ->addOption('signal', 'k', InputOption::VALUE_REQUIRED, 'Send the given POSIX signal to the workers instead of the stop message (-r will be ignored)');
     }
 
+    /**
+     * @param InputInterface $input
+     * @param bool           $alsoDisable
+     * @param bool           $includeRemote
+     * @param string|null    $factory
+     * @param int|null       $signal
+     *
+     * @throws Exception\InvalidArgumentException
+     */
     private function parseCommandLine(InputInterface $input, &$alsoDisable, &$includeRemote, &$factory, &$signal)
     {
         $alsoDisable = $input->getOption('also-disable');
@@ -46,6 +63,7 @@ class StopAllCommand extends ContainerAwareCommand
         }
     }
 
+    /** {@inheritdoc} */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->parseCommandLine($input, $alsoDisable, $includeRemote, $factory, $signal);
@@ -77,6 +95,12 @@ class StopAllCommand extends ContainerAwareCommand
         }
     }
 
+    /**
+     * @param OutputInterface        $output
+     * @param WorkerBootstrapProfile $profile
+     * @param string                 $name
+     * @param string                 $wFactory
+     */
     private function disableWorker(OutputInterface $output, WorkerBootstrapProfile $profile, $name, $wFactory)
     {
         if ($profile->getKillSwitchPath() !== null) {
@@ -87,6 +111,14 @@ class StopAllCommand extends ContainerAwareCommand
         }
     }
 
+    /**
+     * @param OutputInterface        $output
+     * @param WorkerBootstrapProfile $profile
+     * @param string                 $name
+     * @param bool                   $local
+     * @param int|null               $signal
+     * @param string                 $wFactory
+     */
     private function stopWorker(OutputInterface $output, WorkerBootstrapProfile $profile, $name, $local, $signal, $wFactory)
     {
         if ($signal === null) {
@@ -96,6 +128,13 @@ class StopAllCommand extends ContainerAwareCommand
         }
     }
 
+    /**
+     * @param OutputInterface        $output
+     * @param WorkerBootstrapProfile $profile
+     * @param string                 $name
+     * @param bool                   $local
+     * @param string                 $wFactory
+     */
     private function stopWorkerWithMessage(OutputInterface $output, WorkerBootstrapProfile $profile, $name, $local, $wFactory)
     {
         if ($profile->getAdminCookie() !== null) {
@@ -109,6 +148,11 @@ class StopAllCommand extends ContainerAwareCommand
         }
     }
 
+    /**
+     * @param OutputInterface $output
+     * @param string          $name
+     * @param int|null        $signal
+     */
     private function stopWorkerWithSignal(OutputInterface $output, $name, $signal)
     {
         $pid = $this->getRegistry()->getSharedWorkerProcessId($name);
@@ -123,6 +167,13 @@ class StopAllCommand extends ContainerAwareCommand
         }
     }
 
+    /**
+     * @param string|int $signal
+     *
+     * @throws Exception\InvalidArgumentException
+     *
+     * @return int
+     */
     private static function parseSignal($signal)
     {
         if (!function_exists('posix_kill')) {
