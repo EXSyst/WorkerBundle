@@ -9,10 +9,6 @@ use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
 
 class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
 {
-    const IMPLEMENTATION_CLASS = 0;
-    const IMPLEMENTATION_EXPRESSION = 1;
-    const IMPLEMENTATION_SERVICE = 2;
-
     /**
      * @var ContainerInterface
      */
@@ -33,7 +29,7 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
         $this->sharedWorkers = [];
     }
 
-    public function getFactories()
+    public function getFactoryNames()
     {
         return $this->factories;
     }
