@@ -82,7 +82,7 @@ class EXSystWorkerExtension extends Extension
 
     /**
      * @param ContainerBuilder $container
-     * @param string $name
+     * @param string           $name
      *
      * @return Definition
      */
@@ -107,10 +107,10 @@ class EXSystWorkerExtension extends Extension
     }
 
     /**
-     * @param array $bootstrapProfileConfig
-     * @param string $name
+     * @param array      $bootstrapProfileConfig
+     * @param string     $name
      * @param Definition $bootstrapProfileDefinition
-     * @param array $bootstrapProfileConstructorArguments
+     * @param array      $bootstrapProfileConstructorArguments
      */
     private static function processBootstrapProfileConfiguration(array $bootstrapProfileConfig, $name, Definition $bootstrapProfileDefinition, array &$bootstrapProfileConstructorArguments)
     {
@@ -137,7 +137,7 @@ class EXSystWorkerExtension extends Extension
     }
 
     /**
-     * @param array $bootstrapProfileConfig
+     * @param array      $bootstrapProfileConfig
      * @param Definition $bootstrapProfileDefinition
      */
     private static function processBootstrapProfilePhpConfiguration(array $bootstrapProfileConfig, Definition $bootstrapProfileDefinition)
@@ -153,10 +153,10 @@ class EXSystWorkerExtension extends Extension
     }
 
     /**
-     * @param array $bootstrapProfileConfig
-     * @param string $key
+     * @param array      $bootstrapProfileConfig
+     * @param string     $key
      * @param Definition $bootstrapProfileDefinition
-     * @param string $method
+     * @param string     $method
      */
     private static function processBootstrapProfileConfigurationArrayElement(array $bootstrapProfileConfig, $key, Definition $bootstrapProfileDefinition, $method)
     {
@@ -168,9 +168,9 @@ class EXSystWorkerExtension extends Extension
     }
 
     /**
-     * @param array $bootstrapProfileConfig
+     * @param array      $bootstrapProfileConfig
      * @param Definition $bootstrapProfileDefinition
-     * @param string $name
+     * @param string     $name
      */
     private static function processBootstrapProfileLoopConfiguration(array $bootstrapProfileConfig, Definition $bootstrapProfileDefinition, $name)
     {
@@ -185,10 +185,10 @@ class EXSystWorkerExtension extends Extension
     }
 
     /**
-     * @param array $bootstrapProfileConfig
-     * @param string $key
+     * @param array      $bootstrapProfileConfig
+     * @param string     $key
      * @param Definition $bootstrapProfileDefinition
-     * @param string $method
+     * @param string     $method
      */
     private static function processBootstrapProfileConfigurationScalarReplacementElement(array $bootstrapProfileConfig, $key, Definition $bootstrapProfileDefinition, $method)
     {
@@ -199,9 +199,9 @@ class EXSystWorkerExtension extends Extension
     }
 
     /**
-     * @param array $sharedWorkerConfig
+     * @param array  $sharedWorkerConfig
      * @param string $name
-     * @param array $constructorArguments
+     * @param array  $constructorArguments
      *
      * @return string
      */
