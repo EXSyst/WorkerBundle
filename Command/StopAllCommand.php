@@ -2,8 +2,8 @@
 
 namespace EXSyst\Bundle\WorkerBundle\Command;
 
-use EXSyst\Bundle\WorkerBundle\WorkerRegistry;
 use EXSyst\Bundle\WorkerBundle\Exception;
+use EXSyst\Bundle\WorkerBundle\WorkerRegistry;
 use EXSyst\Component\Worker\Bootstrap\WorkerBootstrapProfile;
 use EXSyst\Component\Worker\Internal\IdentificationHelper;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
