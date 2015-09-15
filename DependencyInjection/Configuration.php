@@ -15,6 +15,7 @@ class Configuration implements ConfigurationInterface
         $rootNode
             ->children()
                 ->arrayNode('factories')
+                    ->useAttributeAsKey('id') // If we don't call this, even with a dummy attribute, sf will give numeric keys to subsequent configs, wtf ?
                     ->prototype('array')
                         ->children()
                             ->arrayNode('bootstrap_profile')
@@ -42,6 +43,7 @@ class Configuration implements ConfigurationInterface
                     ->end()
                 ->end()
                 ->arrayNode('shared_workers')
+                    ->useAttributeAsKey('id') // If we don't call this, even with a dummy attribute, sf will give numeric keys to subsequent configs, wtf ?
                     ->prototype('array')
                         ->children()
                             ->scalarNode('factory')->end()
