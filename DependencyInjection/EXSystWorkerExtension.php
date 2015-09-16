@@ -97,6 +97,7 @@ class EXSystWorkerExtension extends Extension
         $definition->addMethodCall('addStage2GlobalVariableWithExpression', ['kernel',
             'new AppKernel('.WorkerBootstrapProfile::exportPhpValue($container->getParameter('kernel.environment')).', '.WorkerBootstrapProfile::exportPhpValue($container->getParameter('kernel.debug')).')', ]);
         $definition->addMethodCall('addStage2Part', ['$kernel->loadClassCache();']);
+        $definition->addMethodCall('addStage2Part', ['$kernel->boot();']);
         $definition->addMethodCall('addStage3Part', ['if ($workerImpl instanceof '.ContainerAwareInterface::class.') {'.PHP_EOL.'    $workerImpl->setContainer($kernel->getContainer());'.PHP_EOL.'}']);
         $definition->addMethodCall('setAdminCookie', [rtrim(strtr(base64_encode(hash_hmac('sha512', $killSwitchPath, $container->getParameter('kernel.secret'), true)), '+/', '-_'), '=')]);
         $definition->addMethodCall('setKillSwitchPath', [$killSwitchPath]);
