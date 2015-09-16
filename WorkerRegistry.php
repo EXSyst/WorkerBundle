@@ -318,7 +318,7 @@ class WorkerRegistry implements CacheClearerInterface, CacheWarmerInterface
                     // HACK to start the worker after Symfony will have moved the cache directory
                     $factory->getBootstrapProfile()->getOrFindPhpExecutablePathAndArguments($php, $phpArgs);
                     $line = array_merge([$php], $phpArgs, [str_replace($cacheDir, dirname($cacheDir).DIRECTORY_SEPARATOR.$this->container->getParameter('kernel.environment'), $scriptPath)]);
-                    system(implode(' ', array_map('escapeshellarg', $line)).' </dev/null >/dev/null 2>&1 &');
+                    SharedWorker::startDaemon($line);
                 });
             }
         }
