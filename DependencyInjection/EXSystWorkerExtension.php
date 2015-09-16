@@ -92,7 +92,7 @@ class EXSystWorkerExtension extends Extension
 
         $definition = new Definition(WorkerBootstrapProfile::class, [false]);
 
-        $definition->addMethodCall('addScriptToRequire', [dirname($container->getParameter('kernel.logs_dir')).'/bootstrap.php.cache']);
+        $definition->addMethodCall('addScriptToRequire', [dirname(dirname($container->getParameter('kernel.cache_dir'))).'/bootstrap.php.cache']);
         $definition->addMethodCall('addScriptToRequire', [$container->getParameter('kernel.root_dir').'/AppKernel.php']);
         $definition->addMethodCall('addStage2GlobalVariableWithExpression', ['kernel',
             'new AppKernel('.WorkerBootstrapProfile::exportPhpValue($container->getParameter('kernel.environment')).', '.WorkerBootstrapProfile::exportPhpValue($container->getParameter('kernel.debug')).')', ]);
