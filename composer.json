@@ -1,6 +1,6 @@
 {
     "name": "exsyst/worker-bundle",
-    "type": "library",
+    "type": "symfony-bundle",
     "description": "Integrates the Worker component into Symfony",
     "license": "Apache-2.0",
     "authors": [
