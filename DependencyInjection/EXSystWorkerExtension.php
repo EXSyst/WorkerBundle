@@ -142,6 +142,7 @@ class EXSystWorkerExtension extends Extension
         self::processBootstrapProfileLoopConfiguration($bootstrapProfileConfig, $bootstrapProfileDefinition, $name);
         self::processBootstrapProfileConfigurationScalarElement($bootstrapProfileConfig, 'socket_context_expression', $bootstrapProfileDefinition, 'setSocketContextExpression');
         self::processBootstrapProfileConfigurationScalarReplacementElement($bootstrapProfileConfig, 'admin_cookie', $bootstrapProfileDefinition, 'setAdminCookie');
+        self::processBootstrapProfileConfigurationScalarReplacementElement($bootstrapProfileConfig, 'output_path', $bootstrapProfileDefinition, 'setOutputPath');
         self::processBootstrapProfileConfigurationScalarReplacementElement($bootstrapProfileConfig, 'kill_switch_path', $bootstrapProfileDefinition, 'setKillSwitchPath');
     }
 
